@@ -1,9 +1,10 @@
+version: '2'
 services:
   api:
     container_name: api
     image: node:18-alpine
     ports:
-      - ${PORT}:${PORT}
+      - "${PORT}:${PORT}"
     depends_on:
       - db
     working_dir: /app
@@ -11,6 +12,8 @@ services:
       - ./:/app
     stdin_open: true 
     tty: true
+    networks:
+      - knoss 
 
   db:
     container_name: postgres
@@ -22,15 +25,27 @@ services:
     environment:
       - POSTGRES_PASSWORD=${DB_PASSWORD}
       - POSTGRES_DB=${DB_NAME}
+    networks:
+      - knoss
 
-  db_test:
-    container_name: test_postgres
+  db_odoo:
+    container_name: db_odoo
     image: postgres:15-alpine
+    user: root
     ports:
-      - '${TEST_DB_HOST_PORT}:${DB_PORT}'
+      - '5432:5432'
+    volumes:
+        - ./postgresql:/var/lib/postgresql/data
     environment:
-      - POSTGRES_PASSWORD=${DB_PASSWORD}
-      - POSTGRES_DB=${TEST_DB_NAME}
+      - POSTGRES_USER=${ODOO_DB_USER}    # Doit être 'odoo' si vous suivez la configuration d'Odoo
+      - POSTGRES_PASSWORD=${ODOO_DB_PASSWORD} # Doit correspondre au mot de passe défini dans le service Odoo
+      - POSTGRES_DB=db_odoo
+    networks:
+      - knoss
 
 volumes:
   data:
+
+networks:
+  knoss:
+    external: true
