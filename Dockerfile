@@ -12,5 +12,5 @@ COPY --from=builder ./app/build ./build
 COPY package* ./
 COPY yarn.lock ./
 RUN yarn install --production
-EXPOSE 8080
+EXPOSE 5532
 CMD ["yarn", "start"]

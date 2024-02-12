@@ -1,51 +1,36 @@
-version: '2'
+version: '3.8'  # Mise à jour pour utiliser une version plus récente de Docker Compose
+
 services:
-  api:
+  ville_api:
     container_name: api
-    image: node:18-alpine
+    image: villeapi:1.0
     ports:
-      - "${PORT}:${PORT}"
+      - "${API_PORT}:5532"  # Assurez-vous que le port 5532 est celui que votre application Node.js écoute
     depends_on:
-      - db
+      - ville_db  # Utilisez le nom du service tel que défini dans ce fichier, pas le nom du conteneur
     working_dir: /app
     volumes:
-      - ./:/app
-    stdin_open: true 
+      - ./volumes/app/${VILLE}:/app
+    stdin_open: true
     tty: true
     networks:
-      - knoss 
+      - Devreos
 
-  db:
-    container_name: postgres
+  ville_db:
+    container_name: ${VILLE}_db
     image: postgres:15-alpine
     ports:
-      - '${DB_HOST_PORT}:${DB_PORT}'
+      - '${DB_PORT}:5432'
     volumes:
-      - data:/var/lib/postgresql/data
+      - ./volumes/data/${VILLE}:/var/lib/postgresql/data  # Correction du chemin pour utiliser un chemin relatif
+      - ./volumes/data/init/:/docker-entrypoint-initdb.d/  # Correction du chemin pour utiliser un chemin relatif
     environment:
-      - POSTGRES_PASSWORD=${DB_PASSWORD}
-      - POSTGRES_DB=${DB_NAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${VILLE}
+      POSTGRES_USER: ${DB_USER}  # Ajout de la variable d'environnement pour l'utilisateur de la DB
     networks:
-      - knoss
-
-  db_odoo:
-    container_name: db_odoo
-    image: postgres:15-alpine
-    user: root
-    ports:
-      - '5432:5432'
-    volumes:
-        - ./postgresql:/var/lib/postgresql/data
-    environment:
-      - POSTGRES_USER=${ODOO_DB_USER}    # Doit être 'odoo' si vous suivez la configuration d'Odoo
-      - POSTGRES_PASSWORD=${ODOO_DB_PASSWORD} # Doit correspondre au mot de passe défini dans le service Odoo
-      - POSTGRES_DB=db_odoo
-    networks:
-      - knoss
-
-volumes:
-  data:
+      - Devreos
 
 networks:
-  knoss:
+  Devreos:
     external: true

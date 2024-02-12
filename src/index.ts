@@ -6,7 +6,7 @@ import createServer from './config/server';
 import { AppDataSource } from './data-source';
 
 const host = process.env.HOST || '0.0.0.0';
-const port = process.env.PORT || '8080';
+const port = process.env.PORT || '5532';
 
 const app = createServer();
 
